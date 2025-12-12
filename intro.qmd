@@ -1,0 +1,34 @@
+# INTRO
+
+El indicador es un índice compuesto basado en una combinación de encuestas y evaluaciones de corrupción provenientes de 13 fuentes diferentes. Este índice clasifica a los países según la percepción de corrupción en su sector público, donde 0 representa un nivel muy alto de corrupción y 100 un país con un nivel muy bajo de corrupción. Las fuentes de información utilizadas para el IPC de 2017 se basan en datos recopilados durante los 24 meses previos a la publicación del índice. El IPC incluye únicamente fuentes que proporcionan una puntuación para un conjunto de países o territorios y que miden la percepción de la corrupción en el sector público. Para que un país o territorio se incluya en la clasificación, debe figurar en al menos tres de las fuentes de datos del IPC. El IPC es publicado por Transparencia Internacional.
+
+```{r}
+library(tidyverse)
+
+
+
+spain_gob
+
+
+df_transparency <- read_csv("database/sdg_16_50__custom_18700582_linear.csv", 
+                            col_types = cols(TIME_PERIOD = col_double(), 
+                            OBS_FLAG = col_skip(), CONF_STATUS = col_skip())) |> 
+  select(geo:OBS_VALUE) 
+spain_gob <- tibble(TIME_PERIOD = seq(2012, 2024, 1),
+                    GOB = c(rep("PP", 6), rep("PSOE", 7))
+                    ) |> 
+  left_join(filter(df_transparency, geo == "Spain")) |> 
+  drop_na()
+
+spain_gob |> 
+  view()
+
+df_transparency |> 
+  filter(str_detect(geo, "Eu|Spain|France|Germany")) |> 
+  ggplot(aes(TIME_PERIOD, OBS_VALUE, linetype = geo)) +
+  geom_line() +
+  geom_point() + 
+  geom_point(data = spain_gob,
+             aes(TIME_PERIOD, 
+                 OBS_VALUE, color = GOB))
+```
